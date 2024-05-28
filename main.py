@@ -19,6 +19,10 @@ molecule_group = pygame.sprite.Group()
 molecule_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(molecule_timer, 1500)
 
+#text
+sim_name = test_font.render('Bernoulli\'s Equation: ', False, 'blue')
+sim_name_rect = sim_name.get_rect(center = (400, 80))
+
 
 while True:
     for event in pygame.event.get():
@@ -28,6 +32,7 @@ while True:
       #  if event.type == molecule_timer:
            # molecule_group.add(Molecule())
     screen.fill('lightblue')
+    screen.blit(sim_name, sim_name_rect)
     pipe.draw(screen)
     pipe.update()
     molecule_group.draw(screen)
