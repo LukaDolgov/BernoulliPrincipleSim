@@ -2,6 +2,14 @@ import pygame
 from sys import exit
 from random import randint, choice
 
+class Pipe(pygame.sprite.Sprite):
+   def __init__(self):
+       super().__init__()
+
+class Molecule(pygame.sprite.Sprite):
+     def __init__(self):
+       super().__init__()
+
 
 pygame.init()
 #measurements in pixels
@@ -10,8 +18,6 @@ pygame.display.set_caption('Bernouli sim')
 clock = pygame.time.Clock()
 test_font = pygame.font.Font('Pixeltype.ttf', 50)
 start_time = 0
-
-
 pipe = pygame.sprite.GroupSingle()
 #pipe.add(Pipe())
 molecule_group = pygame.sprite.Group()
