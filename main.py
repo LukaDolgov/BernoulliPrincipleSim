@@ -36,13 +36,21 @@ class Pipe(pygame.sprite.Sprite):
 
         # Set the position of the rect to be centered on the start_pos
         self.rect.midleft = start_pos
-        pygame.draw.polygon(self.image, self.color, self.rect_points)
 
 class Molecule(pygame.sprite.Sprite):
-     def __init__(self, velocity):
+    def __init__(self, velocity):
        super().__init__()
        self.velocity = velocity
-       self.image = pygame.Surface(pygame.rect())
+       self.xpos = startXpos
+       self.color = "Blue"
+       self.cubelength = 10
+       self.ypos = randint(130 + 20, 130 + distance_within - self.cubelength)
+       self.image = pygame.Surface((10, 10))
+       self.image = self.image.convert_alpha()
+       self.rect = self.image.get_rect()
+       self.rect.centerx = startXpos
+       self.rect.centery = self.ypos
+     
 
 
 pygame.init()
@@ -57,6 +65,7 @@ start_time = 0
 molecular_velocity = 0
 distance_within = 50
 initial_pressure = 0
+startXpos = 230
 
 #objects
 pipe = pygame.sprite.Group()
@@ -82,8 +91,8 @@ while True:
             exit() 
         if event.type == pygame.MOUSEBUTTONDOWN:
             return_pos()
-      #  if event.type == molecule_timer:
-           # molecule_group.add(Molecule())
+        if event.type == molecule_timer:
+           molecule_group.add(Molecule(1))
     screen.fill('lightblue')
     screen.blit(sim_name, sim_name_rect)
     pipe.draw(screen)
