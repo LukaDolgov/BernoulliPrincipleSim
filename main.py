@@ -68,14 +68,15 @@ screen = pygame.display.set_mode((800, 400))
 pygame.display.set_caption('Bernouli sim')
 clock = pygame.time.Clock()
 test_font = pygame.font.Font('Pixeltype.ttf', 50)
+small_font = pygame.font.Font('Pixeltype.ttf', 25)
 start_time = 0
 
 #parameters
 molecular_velocity = 4
 distance_within = 50
-Area = (distance_within / 2) ** 2 * math.pi
+area = (distance_within / 200) ** 2 * math.pi
 initial_pressure = 0
-flowrate = Area * molecular_velocity
+flowrate = round(area * molecular_velocity, 2)
 startXpos = 230
 start_point_X_coord = 230
 end_point_X_coord = 530
@@ -93,6 +94,8 @@ pygame.time.set_timer(molecule_timer, 200)
 #text
 sim_name = test_font.render('Bernoulli\'s Equation: ', False, 'blue')
 sim_name_rect = sim_name.get_rect(center = (400, 80))
+sim_info = small_font.render(f'flowrate: {flowrate} m^3 / sec // cross-sectional area: {round(area, 2)} m^2 // water velocity: {molecular_velocity} m/s', False, 'blue')
+sim_info_rect = sim_name.get_rect(center = (250, 120))
 
 def return_pos():
     mouse_pos = pygame.mouse.get_pos()
@@ -109,6 +112,7 @@ while True:
            molecule_group.add(Molecule(molecular_velocity))
     screen.fill('lightblue')
     screen.blit(sim_name, sim_name_rect)
+    screen.blit(sim_info, sim_info_rect)
     pipe.draw(screen)
     pipe.update()
     molecule_group.draw(screen)
