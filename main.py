@@ -92,11 +92,11 @@ molecule_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(molecule_timer, 50)
 
 #text + arrows
-sim_name = test_font.render('Bernoulli\'s Equation: ', False, 'blue')
+sim_name = test_font.render('Flow Rate Relation ', False, 'blue')
 sim_name_rect = sim_name.get_rect(center = (400, 80))
 sim_info_rect = sim_name.get_rect(center = (250, 120))
 sim_vars = test_font.render('Parameters: ', False, 'blue')
-sim_vars_rect = sim_name.get_rect(center = (175, 200))
+sim_vars_rect = sim_name.get_rect(center = (160, 200))
 param_1 =  small_font.render('Area', False, 'blue')
 param_1_rect = param_1.get_rect(center = (80, 275))
 param_2 =  small_font.render('Velocity', False, 'blue')
