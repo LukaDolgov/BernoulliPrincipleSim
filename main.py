@@ -89,7 +89,7 @@ pipe.add(Pipe((start_point_X_coord, start_point_Y_coord + distance_within * 10),
 molecule_group = pygame.sprite.Group()
 
 molecule_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(molecule_timer, 200)
+pygame.time.set_timer(molecule_timer, 50)
 
 #text + arrows
 sim_name = test_font.render('Bernoulli\'s Equation: ', False, 'blue')
@@ -126,9 +126,15 @@ def click_arrow():
     global molecular_velocity
     if arrowsdown[0].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
         distance_within -= 5
+        sprite_to_remove = pipe.sprites()[1]
+        pipe.remove(sprite_to_remove)
+        pipe.add(Pipe((start_point_X_coord, start_point_Y_coord + distance_within * 10), (end_point_X_coord, start_point_Y_coord + distance_within * 10), "black"))
         print("worked")
     if arrowsup[0].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
         distance_within += 5
+        sprite_to_remove = pipe.sprites()[1]
+        pipe.remove(sprite_to_remove)
+        pipe.add(Pipe((start_point_X_coord, start_point_Y_coord + distance_within * 10), (end_point_X_coord, start_point_Y_coord + distance_within * 10), "black"))
         print('worked')
     if arrowsdown[1].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
         molecular_velocity -= 1
