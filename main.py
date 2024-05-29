@@ -122,16 +122,17 @@ def return_pos():
 
 def click_arrow():
     mouse_pos = pygame.mouse.get_pos()
-    global distance_within
-    global molecular_velocity
+    global distance_within, molecular_velocity, area
     if arrowsdown[0].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
         distance_within -= 5
+        area -= .1
         sprite_to_remove = pipe.sprites()[1]
         pipe.remove(sprite_to_remove)
         pipe.add(Pipe((start_point_X_coord, start_point_Y_coord + distance_within * 10), (end_point_X_coord, start_point_Y_coord + distance_within * 10), "black"))
         print("worked")
     if arrowsup[0].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
         distance_within += 5
+        area += .1
         sprite_to_remove = pipe.sprites()[1]
         pipe.remove(sprite_to_remove)
         pipe.add(Pipe((start_point_X_coord, start_point_Y_coord + distance_within * 10), (end_point_X_coord, start_point_Y_coord + distance_within * 10), "black"))
@@ -153,7 +154,8 @@ while True:
             return_pos()
             click_arrow()
         if event.type == molecule_timer:
-           molecule_group.add(Molecule(molecular_velocity))
+           for i in range(molecular_velocity):
+               molecule_group.add(Molecule(molecular_velocity))
     if sim_mode == 1:
         screen.fill('lightblue')
         screen.blit(sim_name, sim_name_rect)
