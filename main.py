@@ -92,11 +92,11 @@ molecule_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(molecule_timer, 50)
 
 #text + arrows
-sim_name = test_font.render('Flow Rate Relation ', False, 'blue')
+sim_name = test_font.render('Flow Rate Relation: dV/dt = A * dX/dt', False, 'blue')
 sim_name_rect = sim_name.get_rect(center = (400, 80))
-sim_info_rect = sim_name.get_rect(center = (250, 120))
+sim_info_rect = sim_name.get_rect(center = (320, 120))
 sim_vars = test_font.render('Parameters: ', False, 'blue')
-sim_vars_rect = sim_name.get_rect(center = (160, 200))
+sim_vars_rect = sim_name.get_rect(center = (280, 200))
 param_1 =  small_font.render('Area', False, 'blue')
 param_1_rect = param_1.get_rect(center = (80, 275))
 param_2 =  small_font.render('Velocity', False, 'blue')
@@ -106,6 +106,19 @@ arrowdown = pygame.transform.rotozoom(arrowdown, 0, .2)
 arrowup = pygame.transform.rotozoom(arrowdown, 180, 1)
 arrowsdown = []
 arrowsup = []
+
+#change screen button
+change_screen_surface = pygame.Surface((200, 50))
+change_screen_surface.fill("blue")
+change_screen_surface_rect = change_screen_surface.get_rect(center = (670, 300))
+inside_box = pygame.Surface((180, 40))
+inside_box_rect = inside_box.get_rect(center = (100, 25))
+inside_box.fill("black")
+text_surface = small_font.render("change sim", True, 'blue')
+text_rect = text_surface.get_rect(center=(100, 25))
+change_screen_surface.blit(inside_box, inside_box_rect)
+change_screen_surface.blit(text_surface, text_rect)
+
 
 def getarrowdown_rect(i):
     arrowsdown.append(arrowdown.get_rect(midtop = (41 + 100 * i, 274)))
@@ -122,27 +135,29 @@ def return_pos():
 
 def click_arrow():
     mouse_pos = pygame.mouse.get_pos()
-    global distance_within, molecular_velocity, area
-    if arrowsdown[0].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
-        distance_within -= 5
-        area -= .1
-        sprite_to_remove = pipe.sprites()[1]
-        pipe.remove(sprite_to_remove)
-        pipe.add(Pipe((start_point_X_coord, start_point_Y_coord + distance_within * 10), (end_point_X_coord, start_point_Y_coord + distance_within * 10), "black"))
-        print("worked")
-    if arrowsup[0].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
-        distance_within += 5
-        area += .1
-        sprite_to_remove = pipe.sprites()[1]
-        pipe.remove(sprite_to_remove)
-        pipe.add(Pipe((start_point_X_coord, start_point_Y_coord + distance_within * 10), (end_point_X_coord, start_point_Y_coord + distance_within * 10), "black"))
-        print('worked')
-    if arrowsdown[1].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
-        molecular_velocity -= 1
-        print(molecular_velocity)
-    if arrowsup[1].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
-        molecular_velocity += 1
-        print(molecular_velocity)
+    global distance_within, molecular_velocity, area, sim_mode
+    if sim_mode == 1:
+        if arrowsdown[0].collidepoint(mouse_pos) and pygame.mouse.get_pressed() and distance_within > 5:
+            distance_within -= 5
+            area -= .1
+            sprite_to_remove = pipe.sprites()[1]
+            pipe.remove(sprite_to_remove)
+            pipe.add(Pipe((start_point_X_coord, start_point_Y_coord + distance_within * 10), (end_point_X_coord, start_point_Y_coord + distance_within * 10), "black"))
+        if arrowsup[0].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
+            distance_within += 5
+            area += .1
+            sprite_to_remove = pipe.sprites()[1]
+            pipe.remove(sprite_to_remove)
+            pipe.add(Pipe((start_point_X_coord, start_point_Y_coord + distance_within * 10), (end_point_X_coord, start_point_Y_coord + distance_within * 10), "black"))
+        if arrowsdown[1].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
+            molecular_velocity -= .5
+            print(molecular_velocity)
+        if arrowsup[1].collidepoint(mouse_pos) and pygame.mouse.get_pressed():
+            molecular_velocity += .5
+            print(molecular_velocity)
+    if change_screen_surface_rect.collidepoint(mouse_pos) and pygame.mouse.get_pressed():
+        if sim_mode >= 2: sim_mode = 1
+        else: sim_mode += 1
         
 
 while True:
@@ -154,11 +169,11 @@ while True:
             return_pos()
             click_arrow()
         if event.type == molecule_timer:
-           for i in range(molecular_velocity):
+           for i in range(int(molecular_velocity)):
                molecule_group.add(Molecule(molecular_velocity))
     if sim_mode == 1:
         screen.fill('lightblue')
-        screen.blit(sim_name, sim_name_rect)
+        screen.blit(sim_name, sim_name_rect) 
         screen.blit(sim_vars, sim_vars_rect)
         pipe.draw(screen)
         pipe.update()
@@ -172,6 +187,10 @@ while True:
         flowrate = round(area * molecular_velocity, 2)
         sim_info = small_font.render(f'flowrate: {flowrate} m^3 / sec // cross-sectional area: {round(area, 2)} m^2 // water velocity: {molecular_velocity} m/s', False, 'blue')
         screen.blit(sim_info, sim_info_rect)
+        screen.blit(change_screen_surface, change_screen_surface_rect)
+    elif sim_mode == 2: 
+        screen.fill("red")
+        screen.blit(change_screen_surface, change_screen_surface_rect)
         
     pygame.display.update()  
     clock.tick(60)
