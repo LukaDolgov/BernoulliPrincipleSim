@@ -13,10 +13,10 @@ class Pipe(pygame.sprite.Sprite):
         self.color = color
 
         # Calculate the length and angle of the line
-        dx = end_pos[0] - start_pos[0]
-        dy = end_pos[1] - start_pos[1]
-        length = math.hypot(dx, dy)
-        angle = math.atan2(dy, dx)
+        self.dx = end_pos[0] - start_pos[0]
+        self.dy = end_pos[1] - start_pos[1]
+        length = math.hypot(self.dx, self.dy)
+        angle = math.atan2(self.dy, self.dx)
 
         # Create a surface to draw the sloped rectangle
         self.image = pygame.Surface((length, width))
@@ -35,7 +35,7 @@ class Pipe(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
         # Set the position of the rect to be centered on the start_pos
-        self.rect.midleft = start_pos
+        self.rect.center = (start_pos[0] + self.dx/2, start_pos[1] + self.dy/2)
     
 
 class Molecule(pygame.sprite.Sprite):
@@ -45,18 +45,36 @@ class Molecule(pygame.sprite.Sprite):
        self.xpos = startXpos
        self.color = "Blue"
        self.cubelength = 10
-       self.ypos = randint(start_point_Y_coord + self.cubelength, start_point_Y_coord + distance_within * 10 - self.cubelength)
+       if sim_mode == 1:
+         self.ypos = randint(start_point_Y_coord + self.cubelength, start_point_Y_coord + distance_within * 10 - self.cubelength)
+       elif sim_mode == 2:
+         self.ypos = randint(start_point_Y_coord_2 + self.cubelength, start_point_Y_coord_2 + distance_within * 10 - self.cubelength)  
        self.image = pygame.Surface((self.cubelength, self.cubelength))
        self.image.fill(self.color)
        self.image = self.image.convert_alpha()
        self.rect = self.image.get_rect()
        self.rect.centerx = startXpos
        self.rect.centery = self.ypos
+    def posUpdate(self):
+        if sim_mode == 2:
+            if self.xpos >= end_point_X_coord_2 and self.xpos <= end_point_X_coord_3:
+                self.rect.y -= (calculate_slope(pipe_new.sprites()[2]) * 10) / 3
+                self.ypos -= (calculate_slope(pipe_new.sprites()[2]) * 10) / 3
+            elif self.xpos >= end_point_X_coord_3:
+                self.rect.y -= 0
+                self.ypos -= 0
+            if self.xpos >= end_point_X_coord_2 and self.xpos <= end_point_X_coord_3 and self.ypos >= start_point_Y_coord_2 + distance_within * 10:
+                self.ypos = randint(start_point_Y_coord_2 + self.cubelength, start_point_Y_coord_2 + distance_within * 10 - self.cubelength)  
+                self.rect.y = self.ypos
     def update(self):
        self.rect.x += self.velocity
-       self.destroy()    
+       self.xpos += self.velocity
+       self.destroy()
+       self.posUpdate()    
     def destroy(self):
-        if self.rect.x >= 530:
+        if self.rect.x >= 530 and sim_mode ==1:
+            self.kill()
+        elif self.rect.x >= 700:
             self.kill()
         
      
@@ -82,19 +100,38 @@ start_point_X_coord = 230
 end_point_X_coord = 530
 start_point_Y_coord = 130
 
+
+start_point_Y_coord_2 = 200
+end_point_Y_coord = 150
+
+start_point_X_coord_2 = 230
+end_point_X_coord_2 = 430
+end_point_X_coord_3 = 530
+end_point_X_coord_4 = 700
+
 #objects
 pipe = pygame.sprite.Group()
 pipe.add(Pipe((start_point_X_coord, start_point_Y_coord), (end_point_X_coord, start_point_Y_coord), "black"))
 pipe.add(Pipe((start_point_X_coord, start_point_Y_coord + distance_within * 10), (end_point_X_coord, start_point_Y_coord + distance_within * 10), "black"))
 molecule_group = pygame.sprite.Group()
 
+pipe_new = pygame.sprite.Group()
+pipe_new.add(Pipe((start_point_X_coord_2, start_point_Y_coord_2), (end_point_X_coord_2, start_point_Y_coord_2), "black"))
+pipe_new.add(Pipe((start_point_X_coord_2, start_point_Y_coord_2 + distance_within * 10), (end_point_X_coord_2, start_point_Y_coord_2 + distance_within * 10), "black"))
+pipe_new.add(Pipe((end_point_X_coord_2, start_point_Y_coord_2), (end_point_X_coord_3, end_point_Y_coord), "black"))
+pipe_new.add(Pipe((end_point_X_coord_2, start_point_Y_coord_2  + distance_within * 10), (end_point_X_coord_3, end_point_Y_coord + distance_within * 10), "black"))
+pipe_new.add(Pipe((end_point_X_coord_3, end_point_Y_coord), (end_point_X_coord_4, end_point_Y_coord), "black"))
+pipe_new.add(Pipe((end_point_X_coord_3, end_point_Y_coord  + distance_within * 10), (end_point_X_coord_4, end_point_Y_coord + distance_within * 10), "black"))
+molecule_group_new = pygame.sprite.Group()
+
 molecule_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(molecule_timer, 50)
 
-#text + arrows
+#text + arrows screen 1
 sim_name = test_font.render('Flow Rate Relation: dV/dt = A * dX/dt', False, 'blue')
 sim_name_rect = sim_name.get_rect(center = (400, 80))
 sim_info_rect = sim_name.get_rect(center = (320, 120))
+sim_info_rect_new = sim_name.get_rect(midleft = (50, 95))
 sim_vars = test_font.render('Parameters: ', False, 'blue')
 sim_vars_rect = sim_name.get_rect(center = (280, 200))
 param_1 =  small_font.render('Area', False, 'blue')
@@ -106,6 +143,12 @@ arrowdown = pygame.transform.rotozoom(arrowdown, 0, .2)
 arrowup = pygame.transform.rotozoom(arrowdown, 180, 1)
 arrowsdown = []
 arrowsup = []
+
+#text + arrows screen 2
+sim_name_new = test_font.render('Bernouli\'s Equation: ', False, 'blue')
+sim_name_new_rect = sim_name.get_rect(midleft = (50, 40))
+explain_equation = small_font.render('P + pgh + 1/2pv^2 = constant, P= pressure, p=density of fluid, v=velocity of fluid', False, 'blue')
+explain_equation_rect = explain_equation.get_rect(midleft = (50, 70))
 
 #change screen button
 change_screen_surface = pygame.Surface((200, 50))
@@ -123,15 +166,20 @@ change_screen_surface.blit(text_surface, text_rect)
 def getarrowdown_rect(i):
     arrowsdown.append(arrowdown.get_rect(midtop = (41 + 100 * i, 274)))
     return arrowdown.get_rect(midtop = (41 + 100 * i, 274))
-
 def getarrowup_rect(i):
     arrowsup.append(arrowup.get_rect(midbottom = (41 + 100 * i, 270)))
     return arrowup.get_rect(midbottom = (41 + 100 * i, 270))
-
-
 def return_pos():
     mouse_pos = pygame.mouse.get_pos()
     print(mouse_pos)
+    
+def calculate_slope(pipe):
+    dx = pipe.dx
+    dy = pipe.dy
+    return (dy / dx) * -1
+    
+    
+    
 
 def click_arrow():
     mouse_pos = pygame.mouse.get_pos()
@@ -156,8 +204,14 @@ def click_arrow():
             molecular_velocity += .5
             print(molecular_velocity)
     if change_screen_surface_rect.collidepoint(mouse_pos) and pygame.mouse.get_pressed():
-        if sim_mode >= 2: sim_mode = 1
-        else: sim_mode += 1
+        if sim_mode >= 2: 
+          sim_mode = 1
+          molecule_group.empty()
+          molecule_group_new.empty()
+        else: 
+          sim_mode += 1
+          molecule_group.empty()
+          molecule_group_new.empty()
         
 
 while True:
@@ -171,6 +225,7 @@ while True:
         if event.type == molecule_timer:
            for i in range(int(molecular_velocity)):
                molecule_group.add(Molecule(molecular_velocity))
+               molecule_group_new.add(Molecule(molecular_velocity))
     if sim_mode == 1:
         screen.fill('lightblue')
         screen.blit(sim_name, sim_name_rect) 
@@ -189,8 +244,22 @@ while True:
         screen.blit(sim_info, sim_info_rect)
         screen.blit(change_screen_surface, change_screen_surface_rect)
     elif sim_mode == 2: 
-        screen.fill("red")
+        screen.fill("lightblue")
+        screen.blit(sim_name_new, sim_name_new_rect) 
+        screen.blit(explain_equation, explain_equation_rect)
         screen.blit(change_screen_surface, change_screen_surface_rect)
+        for i in range(2):
+            screen.blit(arrowdown, getarrowdown_rect(i))
+            screen.blit(arrowup, getarrowup_rect(i))
+            screen.blit(param_1, param_1_rect)
+            screen.blit(param_2, param_2_rect)
+        flowrate = round(area * molecular_velocity, 2)
+        sim_info = small_font.render(f'flowrate: {flowrate} m^3 / sec // cross-sectional area: {round(area, 2)} m^2 // water velocity: {molecular_velocity} m/s', False, 'blue')
+        screen.blit(sim_info, sim_info_rect_new)
+        pipe_new.draw(screen)
+        pipe_new.update()
+        molecule_group_new.draw(screen)
+        molecule_group_new.update()
         
     pygame.display.update()  
     clock.tick(60)
