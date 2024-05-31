@@ -57,6 +57,7 @@ class Molecule(pygame.sprite.Sprite):
        self.rect.centerx = startXpos
        self.rect.centery = self.ypos
        self.count = 0
+       self.output_vel = flowrate / endarea
     def posUpdate(self):
         if sim_mode == 2:
             for pipe in pipe_new:
@@ -87,8 +88,12 @@ class Molecule(pygame.sprite.Sprite):
                 self.ypos = randint(end_point_Y_coord + self.cubelength, end_point_Y_coord + 50 - self.cubelength * 2)  
                 self.rect.y = self.ypos
     def update(self):
-       self.rect.x += self.velocity
-       self.xpos += self.velocity
+       if self.xpos <= end_point_X_coord_3:
+           self.rect.x += self.velocity
+           self.xpos += self.velocity
+       else:
+           self.rect.x += self.output_vel
+           self.xpos += self.output_vel
        self.destroy()
        self.posUpdate()    
     def destroy(self):
@@ -113,8 +118,10 @@ sim_mode = 1
 molecular_velocity = 4
 distance_within = 5
 area = (distance_within / 20) ** 2 * math.pi
-initial_pressure = 0
+endarea = (5 / 20) ** 2 * math.pi
+end_pressure = 0
 flowrate = round(area * molecular_velocity, 2)
+output_vel = flowrate / endarea
 startXpos = 230
 start_point_X_coord = 230
 end_point_X_coord = 530
@@ -128,6 +135,11 @@ start_point_X_coord_2 = 230
 end_point_X_coord_2 = 430
 end_point_X_coord_3 = 530
 end_point_X_coord_4 = 700
+
+height = start_point_Y_coord_2 - end_point_Y_coord
+water_density = 1
+initial_pressure = 100
+end_pressure = initial_pressure + 1/2 * (water_density) * (output_vel - molecular_velocity) ** 2 - water_density * 9.8 * height / 10
 
 #objects
 pipe = pygame.sprite.Group()
@@ -171,6 +183,10 @@ explain_equation = small_font.render('P + pgh + 1/2pv^2 = constant, P= pressure,
 explain_equation_rect = explain_equation.get_rect(midleft = (50, 70))
 extra_info = small_font.render('*not optimized for velocity less than 2 m/s because of Pygame rounidng*', False, 'blue')
 extra_info_rect = extra_info.get_rect(midleft = (50, 110))
+new_info_text = small_font.render(f'exiting velocity: {output_vel} + change in height: {start_point_Y_coord_2 - end_point_X_coord}', False, 'blue')
+new_info_text_rect = new_info_text.get_rect(midleft = (50, 130))
+new_info_text2 = small_font.render(f'initial pressure: {initial_pressure}N/m^2 + output pressure: {end_pressure}N/m^2', False, 'blue')
+new_info_text_rect2 = new_info_text2.get_rect(midleft = (50, 150))
 
 #change screen button
 change_screen_surface = pygame.Surface((200, 50))
@@ -225,10 +241,14 @@ def click_arrow():
           sim_mode = 1
           molecule_group.empty()
           molecule_group_new.empty()
+          molecular_velocity = 4
+          distance_within = 5
         else: 
           sim_mode += 1
           molecule_group.empty()
           molecule_group_new.empty()
+          molecular_velocity = 4
+          distance_within = 5
     if sim_mode == 2:
         if arrowsdown[0].collidepoint(mouse_pos) and pygame.mouse.get_pressed() and distance_within > 5:
             distance_within -= 5
@@ -296,8 +316,14 @@ while True:
             screen.blit(param_1, param_1_rect)
             screen.blit(param_2, param_2_rect)
         flowrate = round(area * molecular_velocity, 2)
-        sim_info = small_font.render(f'flowrate: {flowrate} m^3 / sec // cross-sectional area: {round(area, 2)} m^2 // water velocity: {molecular_velocity} m/s', False, 'blue')
+        output_vel = flowrate / endarea
+        end_pressure = initial_pressure + 1/2 * (water_density) * (output_vel - molecular_velocity) ** 2 - water_density * 9.8 * height / 10
+        sim_info = small_font.render(f'flowrate: {flowrate} m^3 / sec // cross-sectional area: {round(area, 2)} m^2 // init. water velocity: {molecular_velocity} m/s', False, 'blue')
+        new_info_text = small_font.render(f'exiting velocity: {round(output_vel, 2)}m/s, change in height: {height}m, water density: {water_density}kg/m^3', False, 'blue')
+        new_info_text2 = small_font.render(f'initial pressure: {initial_pressure} + output pressure: {round(end_pressure, 3)}', False, 'blue')
         screen.blit(sim_info, sim_info_rect_new)
+        screen.blit(new_info_text, new_info_text_rect)
+        screen.blit(new_info_text2, new_info_text_rect2)
         screen.blit(extra_info, extra_info_rect)
         pipe_new.draw(screen)
         pipe_new.update()
